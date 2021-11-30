@@ -139,3 +139,5 @@ cython_debug/
 /requirements.txt
 
 /.idea
+/syl.md
+/notes.txt
