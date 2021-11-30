@@ -30,7 +30,6 @@ Station = Base.classes.station
 
 # Create our session (link) from Python to the DB
 
-
 # Flask setup
 app = Flask(__name__)
 
@@ -52,14 +51,16 @@ def hello():
 
 @app.route('/api/v1.0/precipitation')
 def precipitation():
-    session = Session(bind=engine)
+    """get precipitation data for the year before the most recent date
+    in the dataset"""
 
-    # finds the last (most recent) date in the data
-    last_date = session.query(
-        Measurement.date
-    ).order_by(
-        Measurement.date.desc()
-    ).first()[0]
+    with Session() as session:
+        # finds the last (most recent) date in the data
+        last_date = session.query(
+            Measurement.date
+        ).order_by(
+            Measurement.date.desc()
+        ).first()[0]
 
     # convert to date
     last_date = dt.datetime.strptime(last_date, '%Y-%m-%d')
@@ -67,15 +68,15 @@ def precipitation():
     # get data going back 1 year from last_date
     last_year = last_date - dt.timedelta(days=365)
 
-    precip = session.query(
-        Measurement.date, Measurement.prcp
-    ).filter(
-        Measurement.date > last_year
-    ).order_by(
-        Measurement.date
-    ).all()
+    with Session() as session:
+        precip = session.query(
+            Measurement.date, Measurement.prcp
+        ).filter(
+            Measurement.date > last_year
+        ).order_by(
+            Measurement.date
+        ).all()
 
-    session.close()
     # convert query output to dict where {date: prcp}
     # return the dict as a json
     precip_dict = dict(precip)
@@ -86,7 +87,9 @@ def precipitation():
 @app.route('/api/v1.0/stations')
 def stations():
     # Session = sqlalchemy.orm.sessionmaker(engine)
-
+    """
+    return all data from all stations sorted by station and date
+    """
     with Session() as session:
         all_stations = session.query(
             Measurement.station, Measurement.date, Measurement.prcp, Measurement.tobs
@@ -101,8 +104,14 @@ def stations():
 
 @app.route('/api/v1.0/tobs')
 def tobs():
-    # Session = sqlalchemy.orm.sessionmaker(engine)
+    """
+    get the observed temperatures of the most active station from the
+    most recent date and the previous year.
 
+    :returns a jsonified file with the data in dictionary form.
+    """
+
+    # Session = sqlalchemy.orm.sessionmaker(engine)
     # finds the last (most recent) date in the data
     with Session() as session:
         last_date = session.query(
@@ -111,7 +120,7 @@ def tobs():
             Measurement.date.desc()
         ).first()[0]
 
-    # convert to date
+    # convert to date and subtract a year
     last_year = dt.datetime.strptime(
         last_date, '%Y-%m-%d'
     ) - dt.timedelta(days=365)
@@ -160,9 +169,6 @@ def get_temp_data_dates(start, end=None):
         end = dt.datetime.strptime(end, '%Y-%m-%d').date()
 
     start = dt.datetime.strptime(start, '%Y-%m-%d').date()
-
-    # start = start.date()
-    # end = end.date()
 
     if start < dt.date(2010, 1, 1):
         start = dt.date(2010, 1, 1)
