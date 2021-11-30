@@ -30,10 +30,8 @@ Station = Base.classes.station
 
 # Create our session (link) from Python to the DB
 
-
 # Flask setup
 app = Flask(__name__)
-
 
 # routes
 @app.route('/')
@@ -52,30 +50,28 @@ def hello():
 
 @app.route('/api/v1.0/precipitation')
 def precipitation():
-    session = Session(bind=engine)
-
-    # finds the last (most recent) date in the data
-    last_date = session.query(
-        Measurement.date
-    ).order_by(
-        Measurement.date.desc()
-    ).first()[0]
+    with Session() as session:
+        # finds the last (most recent) date in the data
+        last_date = session.query(
+            Measurement.date
+        ).order_by(
+            Measurement.date.desc()
+        ).first()[0]
 
     # convert to date
     last_date = dt.datetime.strptime(last_date, '%Y-%m-%d')
 
     # get data going back 1 year from last_date
     last_year = last_date - dt.timedelta(days=365)
+    with Session() as session:
+        precip = session.query(
+            Measurement.date, Measurement.prcp
+        ).filter(
+            Measurement.date > last_year
+        ).order_by(
+            Measurement.date
+        ).all()
 
-    precip = session.query(
-        Measurement.date, Measurement.prcp
-    ).filter(
-        Measurement.date > last_year
-    ).order_by(
-        Measurement.date
-    ).all()
-
-    session.close()
     # convert query output to dict where {date: prcp}
     # return the dict as a json
     precip_dict = dict(precip)
@@ -111,7 +107,7 @@ def tobs():
             Measurement.date.desc()
         ).first()[0]
 
-    # convert to date
+    # convert to date and subtract a year
     last_year = dt.datetime.strptime(
         last_date, '%Y-%m-%d'
     ) - dt.timedelta(days=365)
