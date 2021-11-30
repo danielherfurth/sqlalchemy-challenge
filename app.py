@@ -17,20 +17,20 @@ from flask import Flask, jsonify
 engine = create_engine("sqlite:///Resources/hawaii.sqlite", echo=False)
 conn = engine.connect()
 
+Session = sqlalchemy.orm.sessionmaker(engine)
 # reflect an existing database into a new model
 Base = automap_base()
 
 # reflect the tables
 Base.prepare(engine, reflect=True)
 
-# %%
 # Save references to each table
 Measurement = Base.classes.measurement
 Station = Base.classes.station
 
 # Create our session (link) from Python to the DB
 
-# %%
+
 # Flask setup
 app = Flask(__name__)
 
@@ -42,8 +42,8 @@ def hello():
 
     return (
         f'Available Routes:<br/>'
-        f'/api/v1.0/Precipitation<br/>'
-        f'/api/v1.0/Stations<br/>'
+        f'/api/v1.0/precipitation<br/>'
+        f'/api/v1.0/stations<br/>'
         f'/api/v1.0/tobs<br/>'
         f'/api/v1.0/<start><br/>'
         f'/api/v1.0/<start>/<end><br/>'
@@ -78,37 +78,38 @@ def precipitation():
     session.close()
     # convert query output to dict where {date: prcp}
     # return the dict as a json
-    precip_dict = jsonify(dict(precip))
+    precip_dict = dict(precip)
 
-    return precip_dict
+    return jsonify(precip_dict)
 
 
-@app.route('/api/v1.0/Stations')
+@app.route('/api/v1.0/stations')
 def stations():
-    session = Session(bind=engine)
+    # Session = sqlalchemy.orm.sessionmaker(engine)
 
-    all_stations = session.query(
-        Measurement.station, Measurement.date, Measurement.prcp, Measurement.tobs
-    ).order_by(Measurement.station).all()
-
-    session.close()
+    with Session() as session:
+        all_stations = session.query(
+            Measurement.station, Measurement.date, Measurement.prcp, Measurement.tobs
+        ).order_by(Measurement.station).all()
 
     # convert tuple to list
-    all_stations = [i for tup in all_stations for i in tup]
+    # all_stations = [i for tup in all_stations for i in tup]
+    all_stations = [list(tup[:4]) for tup in all_stations]
 
     return jsonify(all_stations)
 
 
 @app.route('/api/v1.0/tobs')
 def tobs():
-    session = Session(bind=engine)
+    # Session = sqlalchemy.orm.sessionmaker(engine)
 
     # finds the last (most recent) date in the data
-    last_date = session.query(
-        Measurement.date
-    ).order_by(
-        Measurement.date.desc()
-    ).first()[0]
+    with Session() as session:
+        last_date = session.query(
+            Measurement.date
+        ).order_by(
+            Measurement.date.desc()
+        ).first()[0]
 
     # convert to date
     last_year = dt.datetime.strptime(
@@ -117,26 +118,28 @@ def tobs():
 
     most_active_station = engine.execute(
         'SELECT station '
-        'FROM (SELECT station, COUNT(station) '
-        'AS mycount'
-        '       FROM measurement GROUP BY station ORDER BY mycount DESC) '
+        'FROM ('
+        '       SELECT station, COUNT(station) AS mycount'
+        '       FROM measurement '
+        '       GROUP BY station '
+        '       ORDER BY mycount DESC'
+        '       ) '
         'measurement').first()[0]
 
-    temps = session.query(
-        Measurement.date, Measurement.tobs, Measurement.prcp
-    ).filter(
-        Measurement.date > last_year,
-        Measurement.station == most_active_station
-    ).order_by(
-        Measurement.date
-    ).all()
+    with Session() as session:
+        temps = session.query(
+            Measurement.date, Measurement.tobs, Measurement.prcp
+        ).filter(
+            Measurement.date > last_year,
+            Measurement.station == most_active_station
+        ).order_by(
+            Measurement.date
+        ).all()
 
-    session.close()
-
-    dict = {}
-    return_list =[]
+    return_list = []
 
     for date, tobs, rain in temps:
+        dict = {}
         dict['date'] = date
         dict['tobs'] = tobs
         dict['rain'] = rain
@@ -145,6 +148,47 @@ def tobs():
 
     return jsonify(return_list)
 
+
+@app.route('/api/v1.0/<start>')
+@app.route('/api/v1.0/<start>/<end>')
+def get_temp_data_dates(start, end=None):
+    # Session = sqlalchemy.orm.sessionmaker(engine)
+
+    if end is None:
+        end = dt.date(2017, 8, 23)
+    else:
+        end = dt.datetime.strptime(end, '%Y-%m-%d').date()
+
+    start = dt.datetime.strptime(start, '%Y-%m-%d').date()
+
+    # start = start.date()
+    # end = end.date()
+
+    if start < dt.date(2010, 1, 1):
+        start = dt.date(2010, 1, 1)
+
+    if end > dt.date(2017, 8, 3):
+        end = dt.date(2017, 8, 3)
+
+    with Session() as session:
+        mtobs = Measurement.tobs
+
+        vals = session.query(
+            func.min(mtobs), func.max(mtobs), func.avg(mtobs)
+        ).filter(
+            Measurement.date >= start,
+            Measurement.date <= end
+        ).all()
+
+    out_info = {
+        'start_date': start.strftime('%x'),
+        'end_date': end.strftime('%x'),
+        'min_temp': vals[0][0],
+        'max_temp': vals[0][1],
+        'avg_temp': round(vals[0][2], 1)
+    }
+
+    return jsonify(out_info)
 
 
 if __name__ == '__main__':
