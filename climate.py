@@ -80,7 +80,7 @@ precip_df.plot(
     figsize=(15, 12),
     title='Precipitation Data for August 2016 to August 2017',
     xlabel='Date',
-    ylabel='Precipitation',
+    ylabel='Inches',
     fontsize=14,
     rot=45
 )
