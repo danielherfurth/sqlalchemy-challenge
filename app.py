@@ -161,6 +161,17 @@ def tobs():
 @app.route('/api/v1.0/<start>')
 @app.route('/api/v1.0/<start>/<end>')
 def get_temp_data_dates(start, end=None):
+    """
+    gets the average, min, and max temp in the specified date range.
+
+    Args:
+        start (date): the start date in the format yyyy-m-d
+        end (date): the end date in the format yyyy-m-d
+
+    Returns:
+        a list of lists with the avg, min, max, start date, and end date of the query.
+    """
+
     # Session = sqlalchemy.orm.sessionmaker(engine)
 
     if end is None:
