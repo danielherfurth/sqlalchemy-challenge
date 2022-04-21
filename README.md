@@ -18,15 +18,20 @@ Congratulations! You've decided to treat yourself to a long holiday vacation in 
 
 To begin, use Python and SQLAlchemy to do basic climate analysis and data exploration of your climate database. All of the following analysis should be completed using SQLAlchemy ORM queries, Pandas, and Matplotlib.
 
-* Use the provided [starter notebook](climate_starter.ipynb) and [hawaii.sqlite](Resources/hawaii.sqlite) files to complete your climate analysis and data exploration.
+[//]: # ()
+[//]: # (* Use the provided [starter notebook]&#40;climate_starter.ipynb&#41; and [hawaii.sqlite]&#40;Resources/hawaii.sqlite&#41; files to complete your climate analysis and data exploration.)
 
-* Use SQLAlchemy `create_engine` to connect to your sqlite database.
+[//]: # ()
+[//]: # (* Use SQLAlchemy `create_engine` to connect to your sqlite database.)
 
-* Use SQLAlchemy `automap_base()` to reflect your tables into classes and save a reference to those classes called `Station` and `Measurement`.
+[//]: # ()
+[//]: # (* Use SQLAlchemy `automap_base&#40;&#41;` to reflect your tables into classes and save a reference to those classes called `Station` and `Measurement`.)
 
-* Link Python to the database by creating an SQLAlchemy session.
+[//]: # ()
+[//]: # (* Link Python to the database by creating an SQLAlchemy session.)
 
-* **Important** Don't forget to close out your session at the end of your notebook.
+[//]: # ()
+[//]: # (* **Important** Don't forget to close out your session at the end of your notebook.)
 
 ### Precipitation Analysis
 
@@ -42,7 +47,7 @@ To begin, use Python and SQLAlchemy to do basic climate analysis and data explor
 
 * Plot the results using the DataFrame `plot` method.
 
-  ![precipitation](Images/precipitation.png)
+  ![precipitation](Images/myprecip.png)
 
 * Use Pandas to print the summary statistics for the precipitation data.
 
@@ -52,13 +57,16 @@ To begin, use Python and SQLAlchemy to do basic climate analysis and data explor
 
 * Design a query to find the most active stations (i.e. which stations have the most rows?).
 
-  * List the stations and observation counts in descending order.
+[//]: # (  * List the stations and observation counts in descending order.)
 
-  * Which station id has the highest number of observations?
+[//]: # ()
+[//]: # (  * Which station id has the highest number of observations?)
 
-  * Using the most active station id, calculate the lowest, highest, and average temperature.
+[//]: # ()
+[//]: # (  * Using the most active station id, calculate the lowest, highest, and average temperature.)
 
-  * Hint: You will need to use a function such as `func.min`, `func.max`, `func.avg`, and `func.count` in your queries.
+[//]: # ()
+[//]: # (  * Hint: You will need to use a function such as `func.min`, `func.max`, `func.avg`, and `func.count` in your queries.)
 
 * Design a query to retrieve the last 12 months of temperature observation data (TOBS).
 
@@ -68,7 +76,7 @@ To begin, use Python and SQLAlchemy to do basic climate analysis and data explor
 
   * Plot the results as a histogram with `bins=12`.
 
-    ![station-histogram](Images/station-histogram.png)
+    ![station-histogram](Images/observed.png)
 
 * Close out your session.
 
@@ -188,9 +196,9 @@ Now that you have completed your initial analysis, design a Flask API based on t
 
 * Close out your session.
 
-## Rubric
-
-[Unit 10 Rubric - SQLAlchemy Homework - Surfs Up!](https://docs.google.com/document/d/1gT29iMF3avSvJruKpcHY4qovP5QitgXePqtjC6XESI0/edit?usp=sharing)
+[//]: # (## Rubric)
+[//]: # ()
+[//]: # ([Unit 10 Rubric - SQLAlchemy Homework - Surfs Up!]&#40;https://docs.google.com/document/d/1gT29iMF3avSvJruKpcHY4qovP5QitgXePqtjC6XESI0/edit?usp=sharing&#41;)
 
 - - -
 
